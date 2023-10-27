@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" REST api for the States module """
+""" REST api for the City module """
 from api.v1.views import app_views
 from flask import jsonify, abort, request
 from models.city import City
