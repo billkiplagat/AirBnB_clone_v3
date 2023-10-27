@@ -43,6 +43,7 @@ def delete_review_by_id(review_id):
     if review is None:
         abort(404)
     review.delete()
+    storage.save()
     return jsonify({}), 200
 
 

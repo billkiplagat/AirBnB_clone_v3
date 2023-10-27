@@ -43,6 +43,7 @@ def delete_place_by_id(place_id):
     if place is None:
         abort(404)
     place.delete()
+    storage.save()
     return jsonify({}), 200
 
 

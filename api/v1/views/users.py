@@ -38,6 +38,7 @@ def delete_user_by_id(user_id):
     if user is None:
         abort(404)
     user.delete()
+    storage.save()
     return jsonify({}), 200
 
 
