@@ -58,7 +58,7 @@ def create_city(state_id):
     fields = request.get_json()
     if fields.get('name') is None:
         return 'Missing name', 400
-    city = City(fields)
+    city = City(**fields)
     city.save()
     return jsonify(city.to_dict()), 201
 

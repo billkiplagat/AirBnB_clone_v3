@@ -44,14 +44,14 @@ def delete_amenity_by_id(amenity_id):
 @app_views.route('/amenities',
                  methods=['POST'],
                  strict_slashes=False)
-def create_amenity(amenity_id):
+def create_amenity():
     """ Creates a new Amenity """
     if request.json is None:
         return 'Not a JSON', 400
     fields = request.get_json()
     if fields.get('name') is None:
         return 'Missing name', 400
-    amenity = Amenity(fields)
+    amenity = Amenity(**fields)
     amenity.save()
     return jsonify(amenity.to_dict()), 201
 
