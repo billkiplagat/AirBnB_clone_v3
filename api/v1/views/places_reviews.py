@@ -6,13 +6,18 @@ from models.review import Review
 from models import storage
 
 
-@app_views.route('/reviews', methods=['GET'], strict_slashes=False)
-def get_reviews():
+@app_views.route('/places/<string:place_id>/reviews',
+                 methods=['GET'],
+                 strict_slashes=False)
+def get_reviews(place_id):
     """ Retrieves all reviews """
-    reviews_dict = storage.all('Review').values()
+    if storage.get('Place', place_id) is None:
+        abort(404)
+    reviews_dict = storage.all('Review')
     reviews_list = [
         review.to_dict()
-        for review in reviews_dict
+        for review in reviews_dict.values()
+        if review.place_id == place_id
     ]
     return jsonify(reviews_list)
 
@@ -41,16 +46,23 @@ def delete_review_by_id(review_id):
     return jsonify({}), 200
 
 
-@app_views.route('/reviews',
+@app_views.route('/places/<string:place_id>/reviews',
                  methods=['POST'],
                  strict_slashes=False)
-def create_review():
+def create_review(place_id):
     """ Creates a new Review """
+    if storage.get('Place', place_id) is None:
+        abort(404)
     if request.json is None:
         return 'Not a JSON', 400
     fields = request.get_json()
-    if fields.get('name') is None:
-        return 'Missing name', 400
+    user_id = fields.get('user_id')
+    if user_id is None:
+        return 'Missing user_id', 400
+    if storage.get('User', user_id) is None:
+        abort(404)
+    if fields.get('text') is None:
+        return 'Missing text', 400
     review = Review(**fields)
     review.save()
     return jsonify(review.to_dict()), 201
@@ -68,7 +80,8 @@ def update_review_by_id(review_id):
         return 'Not a JSON', 400
     fields = request.get_json()
     for key, value in fields.items():
-        if key not in ('id', 'created_at', 'updated_at'):
+        if key not in ('id', 'user_id', 'place_id',
+                       'created_at', 'updated_at'):
             setattr(review, key, value)
     review.save()
     return jsonify(review.to_dict()), 200

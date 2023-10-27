@@ -6,13 +6,18 @@ from models.place import Place
 from models import storage
 
 
-@app_views.route('/places', methods=['GET'], strict_slashes=False)
-def get_places():
-    """ Retrieves all places """
-    places_dict = storage.all('Place').values()
+@app_views.route('/cities/<string:city_id>/places',
+                 methods=['GET'],
+                 strict_slashes=False)
+def get_places_by_city_id(city_id):
+    """ Retrieves all places in a city """
+    if storage.get('City', city_id) is None:
+        abort(404)
+    places_dict = storage.all('Place')
     places_list = [
         place.to_dict()
-        for place in places_dict
+        for place in places_dict.values()
+        if place.city_id == city_id
     ]
     return jsonify(places_list)
 
@@ -41,14 +46,21 @@ def delete_place_by_id(place_id):
     return jsonify({}), 200
 
 
-@app_views.route('/places',
+@app_views.route('/cities/<string:city_id>/places',
                  methods=['POST'],
                  strict_slashes=False)
-def create_place():
+def create_place(city_id):
     """ Creates a new Place """
     if request.json is None:
         return 'Not a JSON', 400
+    if storage.get('City', city_id) is None:
+        abort(404)
     fields = request.get_json()
+    if fields.get('user_id') is None:
+        return 'Missing user_id', 400
+    user_id = fields.get('user_id')
+    if storage.get('User', user_id):
+        abort(404)
     if fields.get('name') is None:
         return 'Missing name', 400
     place = Place(**fields)
@@ -68,7 +80,7 @@ def update_place_by_id(place_id):
         return 'Not a JSON', 400
     fields = request.get_json()
     for key, value in fields.items():
-        if key not in ('id', 'created_at', 'updated_at'):
+        if key not in ('id', 'user_id', 'city_id', 'created_at', 'updated_at'):
             setattr(place, key, value)
     place.save()
     return jsonify(place.to_dict()), 200

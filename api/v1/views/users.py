@@ -49,8 +49,10 @@ def create_user():
     if request.json is None:
         return 'Not a JSON', 400
     fields = request.get_json()
-    if fields.get('name') is None:
-        return 'Missing name', 400
+    if fields.get('email') is None:
+        return 'Missing email', 400
+    if fields.get('password') is None:
+        return 'Missing password', 400
     user = User(**fields)
     user.save()
     return jsonify(user.to_dict()), 201
