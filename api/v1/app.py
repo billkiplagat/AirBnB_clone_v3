@@ -4,8 +4,12 @@ from flask import Flask, jsonify
 from models import storage
 from api.v1.views import app_views
 from os import getenv
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(app, resources={"/*": {'origins': '0.0.0.0'}})
+
 # Way to organize Flask application into smaller, reusable components.
 app.register_blueprint(app_views)
 
