@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 """ REST api for the States module """
-from sqlalchemy import delete
 from api.v1.views import app_views
 from flask import jsonify, abort, request
-from models.state import State
 from models.city import City
 from models import storage
 
@@ -13,11 +11,15 @@ from models import storage
                  strict_slashes=False)
 def get_state_cities_by_id(state_id):
     """ Retrieves all cities in a state using state id """
-    state = storage.get('State', state_id)
-    if state is None:
+    if storage.get('State', state_id) is None:
         abort(404)
-    cities = list(map(City.to_dict, state.cities))
-    return jsonify(cities)
+    cities_dict = storage.all('City')
+    cities_list = [
+        city.to_dict()
+        for city in cities_dict.values()
+        if city.state_id == state_id
+    ]
+    return jsonify(cities_list)
 
 
 @app_views.route('/cities/<string:city_id>',
