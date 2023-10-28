@@ -11,15 +11,11 @@ from models import storage
                  strict_slashes=False)
 def get_reviews(place_id):
     """ Retrieves all reviews """
-    if storage.get('Place', place_id) is None:
+    place_object = storage.get('Place', place_id)
+    if place_object is None:
         abort(404)
-    reviews_dict = storage.all('Review')
-    reviews_list = [
-        review.to_dict()
-        for review in reviews_dict.values()
-        if review.place_id == place_id
-    ]
-    return jsonify(reviews_list)
+    reviews = [review.to_dict for review in place_object.reviews]
+    return jsonify(reviews)
 
 
 @app_views.route('/reviews/<string:review_id>',
