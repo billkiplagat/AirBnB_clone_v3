@@ -11,14 +11,10 @@ from models import storage, storage_t
                  strict_slashes=False)
 def get_amenities(place_id):
     """ Retrieves all amenities linked to a place """
-    if storage.get('Place', place_id) is None:
+    place = storage.get('Place', place_id)
+    if place is None:
         abort(404)
-    amenities_dict = storage.all('Amenity')
-    amenities_list = [
-        amenity.to_dict()
-        for amenity in amenities_dict.values()
-        if amenity.place_id == place_id
-    ]
+    amenities_list = place.amenities
     return jsonify(amenities_list)
 
 
